@@ -8,7 +8,7 @@ const sort = require('alphanum-sort');
 
 const pathExists = require('path-exists');
 
-function core() {
+function core(configuration) {
 
   const options = {
     path: null,
@@ -16,6 +16,9 @@ function core() {
 
   const api = {};
 
+  /*
+    Set path to data
+  */
   api.path = async function(location){
     options.path = path.resolve(location);
     mkdirp.sync(options.path);
@@ -42,11 +45,7 @@ function core() {
   api.get = async function(id){
     if(!id) throw new Error('.id is required');
     const dataHasExisted = await api.has(id);
-
-    if(!dataHasExisted){
-      return null;
-    }
-
+    if(!dataHasExisted) return null;
     const directory = path.join(options.path, id);
     const objectFilenames = await pify(fs.readdir)(directory);
     const filename = sort(objectFilenames).pop();
@@ -80,7 +79,8 @@ function core() {
       Increment revision
     */
     rev = rev + 1;
-    const updated = Object.assign({},data,{rev})
+    uid = uuidv4();
+    const updated = Object.assign({},data,{rev,uid})
 
     console.log(updated);
 
@@ -88,8 +88,8 @@ function core() {
       Save File - no file error will occur here becasue the filename is unique.
     */
     const directory = path.join(options.path, updated.id);
-    const fullpath = path.join( directory , updated.rev + '-' + uuidv4() + '.json');
-    if ( ! dataHasExisted ) await mkdirp ( directory );
+    const fullpath = path.join( directory , updated.rev + '-' + uid + '.json');
+    if ( ! dataHasExisted ) mkdirp.sync ( directory );
     fs.writeFileSync( fullpath, JSON.stringify( updated, null, '  ' ) );
 
     return updated;
