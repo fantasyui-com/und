@@ -2,12 +2,13 @@ const path = require('path');
 
 const {core} = require( path.join(__dirname, 'core.js') );
 
-function standard(configuration) {
-
-  // Allow plain old configuration.
+function smart(configuration) {
   const und = core(configuration);
+  // Perform smart presets...
+
+  und.path('./und/');
   return und;
 
 }
 
-module.exports = standard;
+module.exports = smart;
