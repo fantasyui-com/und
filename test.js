@@ -2,22 +2,25 @@ const und = require('./smart.js')({});
 
 (async function main(){
 
-  let doc = await und.get('spot-1');
+  //console.log( (await und.clean()) );
 
-  if(doc){
-    // all is well
-  }else{
-    doc = und.put( {id:'spot-1', name: 'Hello World!'} )
-  }
-
-  console.log( doc );
-
-  // console.log( await und.rev( 'foo' ) );
-
-  //console.log( await und.u( 'foo' ) );
-  await und.put( doc )
-  await und.put( doc )
-  await und.put( Object.assign(doc,{rev:null}) ) // by removing rev, system will assign the latest available
+  //
+  // let doc = await und.get('spot-1');
+  //
+  // if(doc){
+  //   // all is well
+  // }else{
+  //   doc = und.put( {id:'spot-1', name: 'Hello World!'} )
+  // }
+  //
+  // console.log( doc );
+  //
+  // // console.log( await und.rev( 'foo' ) );
+  //
+  // //console.log( await und.u( 'foo' ) );
+  // await und.put( doc )
+  // await und.put( doc )
+  // await und.put( Object.assign(doc,{rev:null}) ) // by removing rev, system will assign the latest available
 
 })()
 

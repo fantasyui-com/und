@@ -24,6 +24,28 @@ function core(configuration) {
     mkdirp.sync(options.path);
   }
 
+  api.clean = async function(id){
+    return new Promise( async function(resolve, reject) {
+      let tasks = Promise.resolve();
+      const response = [];
+      const records = await api.all();
+      records.forEach(async id => {
+        tasks = tasks.then(async function(){
+          const directory = path.join(options.path, id);
+          const objectFilenames = sort(await pify(fs.readdir)(directory));
+          objectFilenames.pop();
+          objectFilenames.forEach(file=>{
+            const fullPath = path.join(directory,file);
+            fs.unlinkSync(fullPath);
+            response.push( fullPath );
+          });
+        });
+      });
+      await tasks;
+      resolve(response);
+    }); // Promise ...
+  }
+
   api.rev = async function(id){
     const directory = path.join(options.path, id);
     const objectFilenames = await pify(fs.readdir)(directory);
