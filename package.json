@@ -4,7 +4,7 @@
   "description": "und - a true marvel of precision engineering: undatabase your code today",
   "main": "index.js",
   "bin": {
-    "und": "node cli.js"
+    "und": "cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
