@@ -55,7 +55,7 @@ This would be achieved by introducing a revision prefix:
 
 Each time an actor is hoping to save data, they get the latest version from the database, in this case 9-4f0154c6-13db-4c18-8e55-2b5a418b6027.txt add their changes, and try to save, if nobody created version 10, they WILL SUCCED, if somebody else created version 10, they will get an edit conflict, and a popup asking them to MANUALLY reconcile changes, you may even let the actors exchange emails/usernames so that they can communicate their intent/schedule to avoid future conflicts.
 
-A quick note on revision conflicts in a distributed, unreliable, multicore, networked world.
+## A quick note on revision conflicts in a distributed, unreliable, multicore, networked world.
 
 Revision conflicts occur when two actors write at the same time to the same revision number. That is to say, two separate programs requested a copy of an object at the same time/object-state (ex. on a Monday Evening), modified the data and performed an updateObject slipping through the cracks between atomic disk IO and node multiprocessing race conditions at the same time, on High Noon Tuesday.
 
@@ -83,7 +83,7 @@ No information can be lost, but both will be unaware that they updated the same 
 
 When alice-profile is read, and a conflict is present, the winner is elected by sort() thus in a situation where two revisions are saved at the same time, and we have a tie, we choose the winner by just sorting the randomly generated filename, in effect we toss the dice; and the winner is chosen at random (by means of a random UUID).
 
-One Thousand Hosts, One Thousand Processes, One Million Revision Conflicts, No Headache.
+## One Thousand Hosts, One Thousand Processes, One Million Revision Conflicts, No Headache.
 
 If you had a 1,000 servers, with 1,000 processes all creating revision 2 of object named important-passwords, thus 1,000 conflicts on 1,000 machines.
 
