@@ -13,18 +13,18 @@ Don't try to save database/alice-profile.txt but rather save database/alice-prof
 
 Twelve administrators one file, and no data is lost. What will occur is the creation of twelve files:
 
-database/alice-profile/35890c38-0bc5-4850-b144-571684b17da6.txt
-database/alice-profile/722ebeee-eef6-40cd-9a56-a948c1144024.txt
-database/alice-profile/798c8045-b151-47d0-a89c-df19ca012a0e.txt
-database/alice-profile/0c09fc0f-0d94-4b49-b08c-3c9336f92211.txt
-database/alice-profile/ce2b80cd-e2a8-4699-9f75-bc5d579b6aba.txt
-database/alice-profile/f58c2518-8fdb-4c70-878a-bb689b547505.txt
-database/alice-profile/2d6f28d7-dcc7-4943-8d6b-5b91edb1e67b.txt
-database/alice-profile/52c7be83-d35c-4150-bf88-8e8fd48774fb.txt
-database/alice-profile/d0d06e8b-bc8c-42a0-9f31-e702ea7eb5d6.txt
-database/alice-profile/6fda9f57-bf72-4bae-8091-4bd4bad09a3c.txt
-database/alice-profile/cd88d433-29b8-4201-a246-d6f1954a3eff.txt
-database/alice-profile/4f0154c6-13db-4c18-8e55-2b5a418b6027.txt
+- database/alice-profile/35890c38-0bc5-4850-b144-571684b17da6.txt
+- database/alice-profile/722ebeee-eef6-40cd-9a56-a948c1144024.txt
+- database/alice-profile/798c8045-b151-47d0-a89c-df19ca012a0e.txt
+- database/alice-profile/0c09fc0f-0d94-4b49-b08c-3c9336f92211.txt
+- database/alice-profile/ce2b80cd-e2a8-4699-9f75-bc5d579b6aba.txt
+- database/alice-profile/f58c2518-8fdb-4c70-878a-bb689b547505.txt
+- database/alice-profile/2d6f28d7-dcc7-4943-8d6b-5b91edb1e67b.txt
+- database/alice-profile/52c7be83-d35c-4150-bf88-8e8fd48774fb.txt
+- database/alice-profile/d0d06e8b-bc8c-42a0-9f31-e702ea7eb5d6.txt
+- database/alice-profile/6fda9f57-bf72-4bae-8091-4bd4bad09a3c.txt
+- database/alice-profile/cd88d433-29b8-4201-a246-d6f1954a3eff.txt
+- database/alice-profile/4f0154c6-13db-4c18-8e55-2b5a418b6027.txt
 
 There is no data loss, only confusion as to how to resolve the conflict.
 
@@ -40,18 +40,18 @@ To borrow from Couch DB, we can add the restriction of a revision, and check, ri
 
 This would be achieved by introducing a revision prefix:
 
-database/alice-profile/```3```-35890c38-0bc5-4850-b144-571684b17da6.txt
-database/alice-profile/```5```-722ebeee-eef6-40cd-9a56-a948c1144024.txt
-database/alice-profile/```7```-798c8045-b151-47d0-a89c-df19ca012a0e.txt
-database/alice-profile/```1```-0c09fc0f-0d94-4b49-b08c-3c9336f92211.txt
-database/alice-profile/```3```-ce2b80cd-e2a8-4699-9f75-bc5d579b6aba.txt
-database/alice-profile/```3```-f58c2518-8fdb-4c70-878a-bb689b547505.txt
-database/alice-profile/```3```-2d6f28d7-dcc7-4943-8d6b-5b91edb1e67b.txt
-database/alice-profile/```5```-52c7be83-d35c-4150-bf88-8e8fd48774fb.txt
-database/alice-profile/```3```-d0d06e8b-bc8c-42a0-9f31-e702ea7eb5d6.txt
-database/alice-profile/```6```-6fda9f57-bf72-4bae-8091-4bd4bad09a3c.txt
-database/alice-profile/```7```-cd88d433-29b8-4201-a246-d6f1954a3eff.txt
-database/alice-profile/```9```-4f0154c6-13db-4c18-8e55-2b5a418b6027.txt
+- database/alice-profile/```3```-35890c38-0bc5-4850-b144-571684b17da6.txt
+- database/alice-profile/```5```-722ebeee-eef6-40cd-9a56-a948c1144024.txt
+- database/alice-profile/```7```-798c8045-b151-47d0-a89c-df19ca012a0e.txt
+- database/alice-profile/```1```-0c09fc0f-0d94-4b49-b08c-3c9336f92211.txt
+- database/alice-profile/```3```-ce2b80cd-e2a8-4699-9f75-bc5d579b6aba.txt
+- database/alice-profile/```3```-f58c2518-8fdb-4c70-878a-bb689b547505.txt
+- database/alice-profile/```3```-2d6f28d7-dcc7-4943-8d6b-5b91edb1e67b.txt
+- database/alice-profile/```5```-52c7be83-d35c-4150-bf88-8e8fd48774fb.txt
+- database/alice-profile/```3```-d0d06e8b-bc8c-42a0-9f31-e702ea7eb5d6.txt
+- database/alice-profile/```6```-6fda9f57-bf72-4bae-8091-4bd4bad09a3c.txt
+- database/alice-profile/```7```-cd88d433-29b8-4201-a246-d6f1954a3eff.txt
+- database/alice-profile/```9```-4f0154c6-13db-4c18-8e55-2b5a418b6027.txt
 
 Each time an actor is hoping to save data, they get the latest version from the database, in this case 9-4f0154c6-13db-4c18-8e55-2b5a418b6027.txt add their changes, and try to save, if nobody created version 10, they WILL SUCCED, if somebody else created version 10, they will get an edit conflict, and a popup asking them to MANUALLY reconcile changes, you may even let the actors exchange emails/usernames so that they can communicate their intent/schedule to avoid future conflicts.
 
