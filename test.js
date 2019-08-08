@@ -1,17 +1,17 @@
-const und = require('./smart.js')({});
+mconst und = require('./smart.js')({});
 
 (async function main(){
 
   //console.log( (await und.clean()) );
 
-  //
-  // let doc = await und.get('spot-1');
-  //
-  // if(doc){
-  //   // all is well
-  // }else{
-  //   doc = und.put( {id:'spot-1', name: 'Hello World!'} )
-  // }
+  let doc = await und.get('spot-1');
+
+  if(doc){
+    // all is well
+  }else{
+    doc = und.put( {id:'spot-1', name: 'Hello World!'} )
+  }
+
   //
   // console.log( doc );
   //
