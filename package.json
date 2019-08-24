@@ -1,6 +1,6 @@
 {
   "name": "und",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "und - a true marvel of precision engineering: undatabase your code today",
   "main": "index.js",
   "bin": {
