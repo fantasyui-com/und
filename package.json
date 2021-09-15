@@ -7,7 +7,8 @@
     "und": "cli.js"
   },
   "scripts": {
-    "test": "ava"
+    "test": "ava",
+    "save": "git add .; git commit -m 'New Release'; git push; npm version patch; npm publish; git push;"
   },
   "ava": {
     "files": [
@@ -19,7 +20,7 @@
     "url": "git+https://github.com/fantasyui-com/und.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "fantasyui.com <fantasyui.com@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/fantasyui-com/und/issues"
