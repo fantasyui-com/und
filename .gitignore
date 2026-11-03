@@ -57,3 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
+
+# Private local coordination journals and execution evidence
+.nt/

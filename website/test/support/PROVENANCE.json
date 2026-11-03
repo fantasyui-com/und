@@ -1,0 +1,25 @@
+{
+  "firstParty": true,
+  "description": "Project-owned CDP and actual forwarding proxy helpers retained from independent R010 browser review. No dependency installation or external service.",
+  "files": [
+    {
+      "source": ".nt/drafts/website-browser/browser-driver.mjs",
+      "sourceSha256": "908e7f56cd0f7e93131c0d34edba4b0d72250a1e7c1b3e5d31442b03b729500c",
+      "destination": "website/test/support/browser-driver.mjs"
+    },
+    {
+      "source": ".nt/drafts/website-browser/fault-proxy.mjs",
+      "sourceSha256": "d9f2fcb53f5a4c374cdb25f2c8bab18bf270b4b707cc68c4a20ab92c8e6b014c",
+      "destination": "website/test/support/fault-proxy.mjs"
+    },
+    {
+      "source": ".nt/drafts/website-browser/review-tools.mjs",
+      "sourceSha256": "0388f3b3ef001c1c9e63830f71d930223efb8112b63c9a79085d2faf93f7d32b",
+      "destination": "website/test/support/browser-tools.mjs"
+    }
+  ],
+  "adaptations": [
+    "browser-tools: require explicit installed browser path instead of hardcoded workstation default",
+    "fault-proxy: trace intent header and combine zero-byte loss with the independently exercised exact-first-byte loss mode; no request replay or fabricated response"
+  ]
+}

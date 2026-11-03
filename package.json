@@ -1,19 +1,16 @@
 {
   "name": "und",
-  "version": "2.13.0",
-  "description": "und - a true marvel of precision engineering: undatabase your code today",
+  "version": "3.0.0",
+  "description": "A small local JSON document store with explicit revisions",
   "main": "index.js",
   "bin": {
     "und": "cli.js"
   },
   "scripts": {
-    "test": "ava",
-    "save": "git add .; git commit -m 'New Release'; git push; npm version patch; npm publish; git push;"
-  },
-  "ava": {
-    "files": [
-      "test.js"
-    ]
+    "test": "node --test test/*.test.cjs website/test/*.test.cjs",
+    "check": "node --check core.js && node --check cli.js && node --check index.js && node --check website/server.cjs && node --check website/public/app.mjs && node --check website/public/state.mjs && node --check website/examples/tutorial.cjs && node --check website/examples/patterns.cjs",
+    "site": "node website/server.cjs",
+    "test:browser": "node website/test/browser-regressions.mjs"
   },
   "repository": {
     "type": "git",
@@ -26,13 +23,31 @@
     "url": "https://github.com/fantasyui-com/und/issues"
   },
   "homepage": "https://github.com/fantasyui-com/und#readme",
-  "dependencies": {
-    "alphanum-sort": "^1.0.2",
-    "commander": "^2.20.3",
-    "mkdirp": "^0.5.1",
-    "path-exists": "^3.0.0",
-    "pify": "^3.0.0",
-    "uuid": "^3.3.3"
+  "engines": {
+    "node": ">=22"
   },
-  "devDependencies": {}
+  "files": [
+    "index.js",
+    "core.js",
+    "cli.js",
+    "index.mjs",
+    "util.mjs",
+    "old-test.js",
+    "test.mjs",
+    "README.md",
+    "MIGRATION.md",
+    "BEHAVIOR.md",
+    "LICENSE",
+    "docs/RELIABILITY.md",
+    "test/fixtures/LICENSE.GPL-3.0.txt",
+    "website/server.cjs",
+    "website/public",
+    "website/examples",
+    "website/application.xml",
+    "website/SPEC.md",
+    "website/ADAPTER.md",
+    "website/SKILL.md",
+    "website/VALIDATION.md",
+    "website/OPERATIONS.md"
+  ]
 }

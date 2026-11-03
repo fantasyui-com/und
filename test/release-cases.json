@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "name": "package: next major, dependency-free manifests and a built-in test entry",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "package: original unfinished sketches and license are retained as historical source",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: explicit initialization and nested directory creation",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: put/get persistence, UUIDs, input preservation and independent instances",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: numeric revisions and locale-independent full-filename tie breaking",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: clean preserves all tied revisions, respects depth and is idempotent",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: all lists records deterministically and preserves unrelated root files",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: invalid IDs, invalid revisions and unserializable data do not create records",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: corrupt latest data is reported and clean does not destroy that record",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: symlink records/files reject without changing external data",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "storage: simultaneous writers retain every same-base revision and leak no stdout",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "cli: help, no-argument help and package-derived version",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "cli: explicit and default database, depth and conflict-preserving cleanup",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "cli: invalid commands/options/depths fail before storage mutation",
+      "file": "test/migration.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: serialization cannot replace stored identity or create an unreadable document",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "extra: old corrupt revisions prevent any deletion of that record",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "extra: observed maximum-safe revision rejects the next write without mutation",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "extra: failed path reconfiguration retains the last valid location",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "extra: a storage ancestor replaced with a symlink is refused before writing",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "extra: retired, duplicate and mixed help arguments fail with no output or mutation",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: a successful put must remain addressable by its enumerated ID and cleanable",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: distinct JavaScript IDs must not silently alias the same record directory",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: an unrepresentable storage location rejects before creating any parent or database",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: distinct requested storage paths must not silently share data",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: malformed Unicode IDs reject across all record methods without changing valid data",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: valid Unicode IDs remain distinct, addressable and cleanable",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: invalid Unicode reconfiguration preserves the selected database and creates no parents",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "regression: valid Unicode storage paths retain separate databases without normalization",
+      "file": "test/regression.test.cjs",
+      "operation": "compatibility"
+    },
+    {
+      "name": "release: clean retains its selected database after reconfiguration",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "ownership"
+    },
+    {
+      "name": "release: get captures database before awaiting location validation",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "ownership"
+    },
+    {
+      "name": "release: partial write cannot expose corrupt JSON or poison reads after rejection",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "publication"
+    },
+    {
+      "name": "release: serialization errors and failed reconfiguration preserve selected storage",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "publication"
+    },
+    {
+      "name": "release: independent same-base writers retain all complete revisions",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "publication"
+    },
+    {
+      "name": "release: failed publication preserves prior readable data",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "publication"
+    },
+    {
+      "name": "release: a competing final filename cannot be overwritten during publication",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "publication"
+    },
+    {
+      "name": "release: known commit survives a later internal cleanup failure",
+      "file": "test/release-boundaries.test.cjs",
+      "operation": "publication"
+    },
+    {
+      "name": "release: current license follows the explicit ISC decision and preserves GPL history",
+      "file": "test/license.test.cjs",
+      "operation": "license"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "providedBy": "Actual user message, Bootstrap archives supplied for this und website",
+  "archives": {
+    "bootstrap": {
+      "file": "/home/meow/Downloads/bootstrap-6.0.0-alpha.1-dist.zip",
+      "sha256": "eb8cece9450eb984ef69c3f89cd320448d20696406a2374b1974c3825a569142"
+    },
+    "icons": {
+      "file": "/home/meow/Downloads/bootstrap-icons-1.13.2.zip",
+      "sha256": "37d3a6afa8156002ad14d93c3e9b5efcd2744a6982995566c8f754fc10d18832"
+    },
+    "source": {
+      "file": "/home/meow/Downloads/bootstrap-main.zip",
+      "sha256": "06ad1eac6f33451712604cc798b4caff0d5feab89a99ee4e519b03b1674064af"
+    }
+  },
+  "files": [
+    {
+      "archive": "bootstrap",
+      "member": "bootstrap-6.0.0-alpha.1-dist/css/bootstrap.min.css",
+      "path": "bootstrap/bootstrap.min.css",
+      "sha256": "678508b198d9b1b8877e338f419fdada00024be2bcc638a539dd724856095112",
+      "bytes": 381199
+    },
+    {
+      "archive": "bootstrap",
+      "member": "bootstrap-6.0.0-alpha.1-dist/js/bootstrap.bundle.min.js",
+      "path": "bootstrap/bootstrap.bundle.min.js",
+      "sha256": "47ea447f46e288dd9d3e83147b7ba539c6df5192c047b8f91739cd56a5721148",
+      "bytes": 219860
+    },
+    {
+      "archive": "icons",
+      "member": "bootstrap-icons-1.13.2/bootstrap-icons.min.css",
+      "path": "icons/bootstrap-icons.min.css",
+      "sha256": "79c99c1a1e0e937f808a58165728b7ed00800f02ef5efcfcd10dfe71464e675d",
+      "bytes": 87008
+    },
+    {
+      "archive": "icons",
+      "member": "bootstrap-icons-1.13.2/fonts/bootstrap-icons.woff2",
+      "path": "icons/fonts/bootstrap-icons.woff2",
+      "sha256": "2b7689746f87e0beeae25338bc021dd2515c2f6f003f3d3d064d878d380b2150",
+      "bytes": 134012
+    },
+    {
+      "archive": "icons",
+      "member": "bootstrap-icons-1.13.2/fonts/bootstrap-icons.woff",
+      "path": "icons/fonts/bootstrap-icons.woff",
+      "sha256": "24929e8a44da027588f833d4e82240ee734bd65bf962b08b0545af58a9ce80fa",
+      "bytes": 180288
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/LICENSE",
+      "path": "LICENSE.bootstrap",
+      "sha256": "bc0cd18d94c028f1c0b62ec9fdaddcb9921c1e07c29cf52dc7df8cca9daf2488",
+      "bytes": 1093
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/site/src/content/docs/components/navbar.mdx",
+      "path": "docs/navbar.mdx",
+      "sha256": "0e5ce4cd91950152a6121e680c3da378f9feb6473f98969462b06aaa93c3ed7a",
+      "bytes": 34934
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/site/src/content/docs/components/collapse.mdx",
+      "path": "docs/collapse.mdx",
+      "sha256": "55ad6d32a00cf7f74622a3903c995910e5a4828e494f255aea242683b55eab04",
+      "bytes": 11283
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/site/src/content/docs/components/card.mdx",
+      "path": "docs/card.mdx",
+      "sha256": "17126e4bb5bcad16de3ec20416719e926c5b483c88ef146b97e205b4f1d5791e",
+      "bytes": 29224
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/site/src/content/docs/components/alert.mdx",
+      "path": "docs/alert.mdx",
+      "sha256": "45e585b47e3e4dd242ae12bbd53867c69535f7770e22b616f7b0a35b6e94c65e",
+      "bytes": 8811
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/site/src/content/docs/components/nav.mdx",
+      "path": "docs/nav.mdx",
+      "sha256": "0070ba8f8b63502362e011a3e973f776bc6c09e393a15ab03bd5e2969d265d64",
+      "bytes": 13792
+    },
+    {
+      "archive": "source",
+      "member": "bootstrap-main/site/src/content/docs/components/drawer.mdx",
+      "path": "docs/drawer.mdx",
+      "sha256": "d3faa72e0aaba03fe618af15981d36826db86de5cad42d261056a31814408a98",
+      "bytes": 21704
+    }
+  ],
+  "notes": [
+    "Bootstrap 6.0.0-alpha.1 bundle is ESM: load as a module, not legacy script.",
+    "Version 6 classes differ from Bootstrap 5: buttons use btn-solid/theme-primary, responsive utilities use md:..., and navbar uses the official Drawer plugin. Inspect supplied docs and CSS; do not invent CSS replacements.",
+    "Only supplied assets extracted; no dependency install, download or whole framework source copied into product."
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "name": "website adapter: real empty create update read and session refresh",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "learning"
+    },
+    {
+      "name": "website adapter: same-base conflicts cleanup depths and independent real-core reopen",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "learning"
+    },
+    {
+      "name": "website adapter: cookie isolation reset and unrelated files survive",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "learning"
+    },
+    {
+      "name": "website adapter: only session endpoint allocates and unknown cookies fail",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "learning"
+    },
+    {
+      "name": "website safety: malformed envelopes and invalid values cannot mutate data or select paths",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "isolation"
+    },
+    {
+      "name": "website safety: bounded body methods origin and Host reject before mutation",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "isolation"
+    },
+    {
+      "name": "website readiness: store initialization failure is an error and can recover",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "availability"
+    },
+    {
+      "name": "website readiness: operation errors retain data and never append failed writes",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "availability"
+    },
+    {
+      "name": "website lifecycle: reset queues behind admitted writes and clears their ledger",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "lifecycle"
+    },
+    {
+      "name": "website lifecycle: a disconnected request is never automatically replayed",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "lifecycle"
+    },
+    {
+      "name": "website lifecycle: close drains admitted work removes owned samples and is idempotent",
+      "file": "test/website-adapter.test.cjs",
+      "operation": "lifecycle"
+    },
+    {
+      "name": "website assets: supplied vendor bytes are served locally through assetRoot",
+      "file": "test/website-assets.test.cjs",
+      "operation": "availability"
+    },
+    {
+      "name": "website assets: missing supplied assets cannot report Playground ready",
+      "file": "test/website-assets.test.cjs",
+      "operation": "availability"
+    },
+    {
+      "name": "website cli: help and invalid arguments terminate without launching a server",
+      "file": "test/website-cli.test.cjs",
+      "operation": "startup"
+    },
+    {
+      "name": "website cli: occupied preferred port falls back and verified instance is reused",
+      "file": "test/website-cli.test.cjs",
+      "operation": "startup"
+    },
+    {
+      "name": "website examples: exact tutorial exercises the real seven-method learning journey",
+      "file": "test/website-examples.test.cjs",
+      "operation": "examples"
+    },
+    {
+      "name": "website examples: exact patterns exercise cleanup depths and the direct CLI",
+      "file": "test/website-examples.test.cjs",
+      "operation": "examples"
+    },
+    {
+      "name": "website state: signal binds its initial value, updates and unsubscribes",
+      "file": "test/website-state.test.cjs",
+      "operation": "reactivity"
+    },
+    {
+      "name": "website state: reentrant signal updates preserve coherent revision delivery",
+      "file": "test/website-state.test.cjs",
+      "operation": "reactivity"
+    },
+    {
+      "name": "website state: emitter uses ordered snapshots and removes subscriptions",
+      "file": "test/website-state.test.cjs",
+      "operation": "reactivity"
+    },
+    {
+      "name": "website state: disposal closes admission and attempts every owned cleanup",
+      "file": "test/website-state.test.cjs",
+      "operation": "reactivity"
+    }
+  ]
+}

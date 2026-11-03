@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application id="und-learning" version="3.0.0">
+  <entry kind="server" location="server.cjs" command="npm run site"/>
+  <entry kind="document" location="public/index.html"/>
+  <component id="interface" location="public/app.mjs"/>
+  <component id="reactive-state" location="public/state.mjs"/>
+  <component id="library" location="../index.js"/>
+  <resource id="bootstrap-css" location="public/vendor/bootstrap/bootstrap.min.css"/>
+  <resource id="bootstrap-module" location="public/vendor/bootstrap/bootstrap.bundle.min.js"/>
+  <resource id="icons-css" location="public/vendor/icons/bootstrap-icons.min.css"/>
+  <resource id="icons-woff" location="public/vendor/icons/fonts/bootstrap-icons.woff"/>
+  <resource id="icons-woff2" location="public/vendor/icons/fonts/bootstrap-icons.woff2"/>
+  <resource id="bootstrap-license" location="public/vendor/LICENSE.bootstrap"/>
+  <resource id="icons-license" location="public/vendor/LICENSE.icons"/>
+  <resource id="provenance" location="public/vendor/provenance.json"/>
+  <resource id="tutorial" location="examples/tutorial.cjs"/>
+  <resource id="patterns" location="examples/patterns.cjs"/>
+  <resource id="readme" location="../README.md"/>
+  <resource id="migration" location="../MIGRATION.md"/>
+  <resource id="behavior" location="../BEHAVIOR.md"/>
+  <resource id="license" location="../LICENSE"/>
+  <contract location="OPERATIONS.md"/><contract location="SPEC.md"/><contract location="ADAPTER.md"/>
+  <procedure location="SKILL.md"/><evidence location="VALIDATION.md"/>
+</application>
