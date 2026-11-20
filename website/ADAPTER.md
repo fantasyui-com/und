@@ -4,7 +4,8 @@ This is pre-implementation test preparation for the accepted R-005 U01-U14 contr
 Only .nt/drafts/website-gate files were authored. The coordinator must review,
 promote and register the final closure before a worker claims implementation.
 
-website/server.cjs exports async startSite({port=0,assetRoot?,createStore?}={})
+website/server.cjs exports async startSite({port=0,assetRoot?,createStore?,
+maxSessions=32,sessionIdleMs=6h,maxIntents=256,maxWrites=100}={})
 and returns {url,close}. The default factory is the actual ../index.js; createStore
 is an internal factory injection used only for fault testing. Each session gets
 a new server-owned temporary sample. All session operations, including reads and
@@ -23,6 +24,17 @@ GET /api/session initializes or reuses an opaque HttpOnly SameSite=Strict Path=/
 cookie and returns result:null. GET /api/state requires a valid cookie and returns
 result:null plus the snapshot. Repeating /api/session with its cookie preserves
 the existing sample. /state and /operation never allocate implicit samples.
+
+Samples are bounded. Creating a session first retires sessions idle for
+sessionIdleMs, then the least recently used idle session while maxSessions are
+held. Retirement removes that sample directory behind its queued work; its cookie
+then receives 401 SESSION_REQUIRED and /api/session starts an empty sample. A
+session with a request in progress is never retired: when every place is busy, a
+new session is refused with 503 SESSION_LIMIT and Retry-After. No timer runs.
+
+state.writes lists at most maxWrites of the newest successful put returns;
+state.omittedWrites counts older returns dropped from the list since the last
+reset. Dropping a list entry never removes a stored revision.
 
 POST /api/operation takes exactly {method,args}, where args is an array:
 put:[document], get/has/rev:[id], all/reset:[], clean:[] or [depth].

@@ -8,7 +8,7 @@ export function mountPage(doc = document, transport = fetch) {
   const signals = Object.fromEntries(['availability','status','error','call','result','selected','ids','operations','result-age','branch-a','branch-b','branch-selected','copy-status'].map(id => [id, Signal(el(id).textContent)]));
   for (const [id, signal] of Object.entries(signals)) scope.use(SignalBinder(el(id), signal));
   const set = (id, value) => signals[id].set(value);
-  let revision = 0, disposed = false, busy = false, ready = false, lastSaved, selected, writes = [], history = [], branchA, branchB;
+  let revision = 0, disposed = false, busy = false, ready = false, lastSaved, selected, writes = [], omitted = 0, history = [], branchA, branchB;
   const pending = new Set();
   const valid = token => !disposed && token === revision;
   const navigation = Drawer.getOrCreateInstance(el('navigation'));
@@ -35,16 +35,17 @@ export function mountPage(doc = document, transport = fetch) {
   function renderWrites() {
     const container = el('writes'); container.replaceChildren();
     if (!writes.length) { const p = doc.createElement('p'); p.textContent = 'No writes yet. Save the example document to begin.'; container.append(p); return; }
+    if (omitted) { const p = doc.createElement('p'); p.className = 'col-12'; p.textContent = 'Showing the ' + writes.length + ' most recent saves. ' + omitted + ' earlier save return(s) are no longer listed here; their files remain until cleanup or reset.'; container.append(p); }
     for (const [index, write] of writes.entries()) {
       const column = doc.createElement('div'); column.className = 'col-12 md:col-6 min-w-0';
       const card = doc.createElement('article'); card.className = 'card h-100'; const body = doc.createElement('div'); body.className = 'card-body';
-      const title = doc.createElement('h4'); title.className = 'fs-lg text-break'; title.textContent = 'Save ' + (index + 1) + ' · ' + write.id + ' · revision ' + write.rev;
+      const title = doc.createElement('h4'); title.className = 'fs-lg text-break'; title.textContent = 'Save ' + (omitted + index + 1) + ' · ' + write.id + ' · revision ' + write.rev;
       const note = doc.createElement('p'); note.className = 'fs-sm'; note.textContent = selected?.uid === write.uid ? 'Selected by the most recent get()' : 'Saved return · may have been pruned by cleanup';
-      const pre = doc.createElement('pre'); pre.className = 'overflow-auto'; pre.tabIndex = 0; pre.setAttribute('aria-label', 'Saved return ' + (index + 1)); pre.textContent = pretty(write);
+      const pre = doc.createElement('pre'); pre.className = 'overflow-auto'; pre.tabIndex = 0; pre.setAttribute('aria-label', 'Saved return ' + (omitted + index + 1)); pre.textContent = pretty(write);
       body.append(title,note,pre); card.append(body); column.append(card); container.append(column);
     }
   }
-  function snapshot(state) { writes = state.writes; set('ids',pretty(state.ids)); renderWrites(); }
+  function snapshot(state) { writes = state.writes; omitted = state.omittedWrites ?? 0; set('ids',pretty(state.ids)); renderWrites(); }
   async function request(route, options = {}) {
     const controller = new AbortController(); pending.add(controller);
     const timeout = setTimeout(() => controller.abort(), 12000);

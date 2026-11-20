@@ -19,6 +19,10 @@ Readers must observe complete published JSON revisions, never a prefix still bei
 written. A failure before publication rejects without publishing a corrupt revision,
 advancing rev(), poisoning get()/clean(), or changing prior revision bytes.
 Internal staging must not appear as record IDs or invalid revision files.
+A first write that fails must not leave an empty record: the record directory is
+made only after complete bytes are staged, and is withdrawn (empty-only rmdir) if
+this put created it and published nothing. A concurrent writer that loses the
+directory to such a withdrawal recreates it and still publishes.
 Publication may not replace a final filename created by another writer. Collision
 may reject with EEXIST or retry a new identity. Independent same-base writers keep
 all complete documents and the existing numeric/filename winner remains unchanged.

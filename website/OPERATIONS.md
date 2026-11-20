@@ -59,6 +59,11 @@ request queued after reset is admitted into the generation in which it executes.
 
 Identity records are owned by the cookie session and released when the server closes.
 They are in memory only, with no cross-process/restart/durable or crash guarantee.
+Each session keeps at most `maxIntents` identity records (default 256). When a new
+identity would exceed that, the oldest settled records are forgotten first; pending
+operations are never dropped, so a transport retry still joins its original. A retry
+arriving after its record was forgotten is treated as a new intent, which is why the
+bound is far larger than any retry window the browser uses.
 This is a small local teaching service without a general resource-quota claim.
 Existing sample allocation ownership, drain-before-close and honest cleanup failures
 are preserved. Pending duplicate handlers are admitted work and close drains them.

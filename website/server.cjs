@@ -10,8 +10,11 @@ const vendorFiles = ['bootstrap/bootstrap.min.css', 'bootstrap/bootstrap.bundle.
 const htmlEscape = text => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 const problem = (status, message, code = 'INVALID_REQUEST') => Object.assign(new Error(message), {status, code});
 
-async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/vendor'), createStore = () => createUnd({}), identity = null} = {}) {
+async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/vendor'), createStore = () => createUnd({}), identity = null, maxSessions = 32, sessionIdleMs = 6 * 60 * 60 * 1000, maxIntents = 256, maxWrites = 100} = {}) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new TypeError('port must be an integer from 0 to 65535');
+  for (const [name, value] of Object.entries({maxSessions, sessionIdleMs, maxIntents, maxWrites})) {
+    if (!Number.isSafeInteger(value) || value < 1) throw new TypeError(name + ' must be a positive safe integer');
+  }
   const staticFiles = new Map();
   for (const relative of vendorFiles) {
     try { staticFiles.set('/vendor/' + relative, await fs.readFile(path.join(assetRoot, relative))); }
@@ -22,12 +25,13 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
   for (const name of ['tutorial', 'patterns']) {
     const bytes = await fs.readFile(path.join(__dirname, 'examples', name + '.cjs'));
     staticFiles.set('/examples/' + name + '.cjs', bytes);
-    html = html.replace('{{' + name + '}}', htmlEscape(bytes.toString()));
+    // A function replacement keeps `$&`-style sequences in example source literal.
+    html = html.replace('{{' + name + '}}', () => htmlEscape(bytes.toString()));
   }
   staticFiles.set('/', Buffer.from(html));
   staticFiles.set('/docs/VALIDATION.md', await fs.readFile(path.join(__dirname, 'VALIDATION.md')));
   for (const name of ['README.md', 'MIGRATION.md', 'BEHAVIOR.md', 'LICENSE']) staticFiles.set('/docs/' + name, await fs.readFile(path.join(root, name)));
-  const sessions = new Map(), active = new Set(), ownedDirectories = new Set();
+  const sessions = new Map(), active = new Set(), ownedDirectories = new Set(), retiring = new Set();
   let closing = false, closePromise, stopped, url;
   async function removeOwned(directory) {
     await fs.rm(directory, {recursive:true, force:true});
@@ -47,7 +51,22 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
     try { const store = createStore(); await store.path(directory); return {directory, store}; }
     catch (error) { return cleanupAfterFailure(directory, error); }
   }
-  const snapshot = async session => ({ids:await session.store.all(), writes:session.writes});
+  // Samples are bounded without a timer: each new session first retires those
+  // idle past the limit, then the least recently used idle one when full. Only
+  // a session with no request in progress is retired, behind its queued work.
+  function retire(key, session) {
+    sessions.delete(key);
+    const removal = enqueue(session, () => removeOwned(session.directory)).catch(() => {});
+    retiring.add(removal); removal.then(() => retiring.delete(removal));
+  }
+  function admitSession() {
+    const now = performance.now();
+    const idle = [...sessions].filter(([, session]) => session.busy === 0).sort((a, b) => a[1].used - b[1].used);
+    for (const [key, session] of idle) if (now - session.used >= sessionIdleMs) retire(key, session);
+    for (const [key, session] of idle) { if (sessions.size < maxSessions) break; if (sessions.has(key)) retire(key, session); }
+    if (sessions.size >= maxSessions) throw Object.assign(problem(503, 'Too many Playground samples are in use. Try again shortly.', 'SESSION_LIMIT'), {headers:{'Retry-After':'5'}});
+  }
+  const snapshot = async session => ({ids:await session.store.all(), writes:session.writes, omittedWrites:session.omittedWrites});
   function enqueue(session, work) {
     const operation = session.tail.then(work);
     session.tail = operation.catch(() => {});
@@ -63,7 +82,9 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
     return {earlier, release() { session.receiving.delete(received); resolve(); }};
   }
   function jsonBytes(res, status, bytes, headers = {}) {
-    if (!res.destroyed) { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', ...headers}); res.end(bytes); }
+    // While closing, end the connection with the reply: a keep-alive socket that
+    // becomes idle after server.close() would otherwise delay shutdown for seconds.
+    if (!res.destroyed) { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', ...(closing ? {Connection:'close'} : {}), ...headers}); res.end(bytes); }
   }
   function json(res, status, value, headers = {}) { jsonBytes(res, status, JSON.stringify(value), headers); }
   function errorReceipt(error) {
@@ -89,11 +110,13 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
       });
       req.once('error', reject);
       req.once('aborted', () => reject(problem(400, 'Request body disconnected.')));
+      // 'aborted' is deprecated; an early close must still release this request.
+      req.once('close', () => { if (!req.complete) reject(problem(400, 'Request body disconnected.')); });
     });
   }
 
   async function handle(req, res) {
-    let admission;
+    let admission, session;
     try {
       if (closing) throw problem(503, 'Playground is shutting down.', 'UNAVAILABLE');
       if (req.headers.host !== new URL(url).host || (req.headers.origin !== undefined && req.headers.origin !== url)) throw problem(403, 'Use this local site origin and Host.', 'ORIGIN');
@@ -105,16 +128,23 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
         if (!bytes) throw problem(404, 'Resource not found.', 'NOT_FOUND');
         const ext = path.extname(route);
         const mime = {'.css':'text/css', '.mjs':'text/javascript', '.js':'text/javascript', '.woff2':'font/woff2', '.woff':'font/woff'}[ext] || (route === '/' ? 'text/html' : 'text/plain');
-        res.writeHead(200, {'Content-Type':mime + (mime.startsWith('text/') ? '; charset=utf-8' : ''), 'X-Content-Type-Options':'nosniff', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"});
+        res.writeHead(200, {'Content-Type':mime + (mime.startsWith('text/') ? '; charset=utf-8' : ''), 'Content-Length':bytes.length, 'X-Content-Type-Options':'nosniff', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"});
         res.end(req.method === 'HEAD' ? undefined : bytes); return;
       }
       const token = /(?:^|;\s*)und_sample=([^;]+)/.exec(req.headers.cookie || '')?.[1];
-      let session = sessions.get(token);
+      session = sessions.get(token);
+      if (session) { session.busy++; session.used = performance.now(); }
       if (route === '/api/session' && req.method === 'GET') {
         let headers = {};
         if (!session) {
-          const owned = await sample(), key = randomUUID();
-          session = {...owned, writes:[], tail:Promise.resolve(), intents:new Map(), generation:0, receiving:new Set()}; sessions.set(key, session);
+          admitSession();
+          const key = randomUUID(), reserved = {busy:1, used:performance.now()};
+          // Reserve the place before the asynchronous sample so concurrent
+          // first visits cannot exceed the limit together.
+          sessions.set(key, reserved);
+          let owned;
+          try { owned = await sample(); } catch (error) { sessions.delete(key); throw error; }
+          session = Object.assign(reserved, owned, {writes:[], omittedWrites:0, tail:Promise.resolve(), intents:new Map(), generation:0, receiving:new Set()});
           headers = {'Set-Cookie':'und_sample=' + key + '; HttpOnly; SameSite=Strict; Path=/'};
         }
         const state = await enqueue(session, () => snapshot(session)); json(res, 200, {ok:true, result:null, state}, headers); return;
@@ -146,8 +176,14 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
           if (stale()) throw problem(409, 'This intent belongs to a sample before reset. Read the current sample explicitly.', 'STALE_INTENT');
           jsonBytes(res, receipt.status, receipt.bytes); return;
         }
-        entry = {fingerprint, generation:null, promise:null};
+        entry = {fingerprint, generation:null, promise:null, settled:false};
         session.intents.set(intent, entry);
+        // Bound the ledger: forget the oldest settled receipts. Pending intents
+        // are never dropped, so a transport retry still joins its operation.
+        for (const [key, prior] of session.intents) {
+          if (session.intents.size <= maxIntents) break;
+          if (prior.settled) session.intents.delete(key);
+        }
       }
       const execute = async () => {
         if (entry) entry.generation = session.generation;
@@ -156,7 +192,7 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
           const next = await sample();
           try { await removeOwned(session.directory); }
           catch (error) { return cleanupAfterFailure(next.directory, error); }
-          Object.assign(session, next, {writes:[]}); result = null;
+          Object.assign(session, next, {writes:[], omittedWrites:0}); result = null;
           session.generation++;
           if (entry) entry.generation = session.generation;
           // Keep small tombstones so an old request cannot resurrect reset data.
@@ -166,12 +202,18 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
           }
         } else {
           result = await session.store[input.method](...input.args);
-          if (input.method === 'put') session.writes.push(result);
+          if (input.method === 'put') {
+            session.writes.push(result);
+            // The ledger is a teaching aid, not history: keep the newest saves
+            // and report how many older returns are no longer listed.
+            while (session.writes.length > maxWrites) { session.writes.shift(); session.omittedWrites++; }
+          }
         }
         return {ok:true, result, state:await snapshot(session)};
       };
       if (entry) {
         entry.promise = enqueue(session, execute).then(value => ({status:200, bytes:JSON.stringify(value)}), errorReceipt);
+        entry.promise.then(() => { entry.settled = true; });
         admission.release();
         const receipt = await entry.promise;
         jsonBytes(res, receipt.status, receipt.bytes);
@@ -181,8 +223,8 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
         json(res, 200, await operation);
       }
     } catch (error) {
-      const receipt = errorReceipt(error); jsonBytes(res, receipt.status, receipt.bytes);
-    } finally { admission?.release(); }
+      const receipt = errorReceipt(error); jsonBytes(res, receipt.status, receipt.bytes, error.headers);
+    } finally { admission?.release(); if (session) { session.busy--; session.used = performance.now(); } }
   }
   const server = http.createServer((req, res) => {
     const work = handle(req, res); active.add(work); work.finally(() => active.delete(work));
@@ -198,8 +240,8 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
     closing = true;
     closePromise = (async () => {
       stopped ||= new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
-      await Promise.all([...active]); await stopped;
-      await Promise.all([...sessions.values()].map(session => session.tail));
+      await Promise.all([...active]); server.closeIdleConnections(); await stopped;
+      await Promise.all([...sessions.values()].map(session => session.tail)); await Promise.all([...retiring]);
       const results = await Promise.allSettled([...ownedDirectories].map(removeOwned));
       const failures = results.filter(result => result.status === 'rejected').map(result => result.reason);
       if (failures.length) throw new AggregateError(failures, 'Owned sample cleanup failed; close may be retried after the filesystem recovers.');
@@ -212,7 +254,7 @@ async function startSite({port = 0, assetRoot = path.join(__dirname, 'public/ven
 
 async function main(argv) {
   let port = 8080;
-  if (argv.length === 1 && argv[0] === '--help') { console.log('Usage: node website/server.cjs [--port N]\nLocal und learning site. Port defaults to 8080; 0 selects an available port.'); return; }
+  if (argv.length === 1 && (argv[0] === '--help' || argv[0] === '-h')) { console.log('Usage: node website/server.cjs [--port N]\n       node website/server.cjs -h|--help\nLocal und learning site. Port defaults to 8080; 0 selects an available port.'); return; }
   if (argv.length && (argv.length !== 2 || argv[0] !== '--port' || !/^(0|[1-9][0-9]*)$/.test(argv[1]) || Number(argv[1]) > 65535)) throw new Error('Usage: node website/server.cjs [--port N] or --help; N is 0–65535.');
   if (argv.length) port = Number(argv[1]);
   const runtime = path.resolve(process.env.UND_SITE_RUNTIME_DIR || path.join(os.tmpdir(), 'und-site-' + createHash('sha256').update(root).digest('hex').slice(0,16)));
@@ -226,7 +268,10 @@ async function main(argv) {
   } catch {}
   const identity = {root, runtime, token:randomUUID()};
   const site = await startSite({port, identity});
-  try { await fs.mkdir(runtime, {recursive:true}); await fs.writeFile(receipt, JSON.stringify({...identity, url:site.url})); }
+  try { // Publish the receipt by rename so a concurrent startup never reads a prefix.
+    await fs.mkdir(runtime, {recursive:true}); const draft = receipt + '.' + identity.token + '.tmp';
+    try { await fs.writeFile(draft, JSON.stringify({...identity, url:site.url})); await fs.rename(draft, receipt); }
+    catch (error) { await fs.rm(draft, {force:true}).catch(() => {}); throw error; } }
   catch (error) { await site.close(); throw new Error('Cannot record local startup identity: ' + error.message); }
   let stopping;
   function stop() {

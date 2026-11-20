@@ -72,6 +72,10 @@ unchanged, and stored data is no longer printed to stdout.
   integer. Unknown/repeated options, extra operands and missing values fail before
   storage access. Runtime failures produce stderr and a nonzero exit status.
 - The unused `--no-tests`/`-T` option is removed.
+- `und clean` requires an existing database directory. A missing path fails and
+  is not created; `--depth=N` and a `--` operand separator are accepted.
+- A `put` that fails leaves no empty record directory behind, so `has` and `all`
+  do not report a record that has no revision.
 
 ## Evidence boundaries
 

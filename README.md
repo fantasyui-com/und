@@ -79,6 +79,10 @@ extra operands and missing/invalid depth values fail before accessing storage,
 with an explanation on stderr and a nonzero exit status. Filesystem failures also
 return nonzero status. The unused `--no-tests` flag is retired.
 
+`--depth=N` is accepted as well as `--depth N`. Use `--` before a database path
+that begins with a dash. `clean` requires an existing database directory: a
+missing path fails without creating anything.
+
 ## Verification and historical source
 
 Run `npm test` for the explicit `node:test` contract and regression suites in

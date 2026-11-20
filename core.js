@@ -73,7 +73,15 @@ function core(configuration) {
     const state = await record(base, id);
     const entries = [];
     if (state.exists) {
-      for (const name of await fs.readdir(state.directory)) {
+      let names;
+      try { names = await fs.readdir(state.directory); }
+      catch (error) {
+        // A failed first write withdraws its empty record directory; a reader
+        // that saw it a moment earlier observes an absent record, not an error.
+        if (error.code !== 'ENOENT') throw error;
+        return { ...state, exists: false, entries };
+      }
+      for (const name of names) {
         const file = path.join(state.directory, name);
         const info = await fs.lstat(file);
         if (info.isSymbolicLink()) throw new Error(`Symlink revision is not allowed: ${file}`);
@@ -118,9 +126,10 @@ function core(configuration) {
       // snapshot so a staging file unlinked meanwhile needs no further stat.
       if (entry.isFile()) continue;
       const id = entry.name, directory = path.join(base, id);
-      const info = await fs.lstat(directory);
-      if (info.isSymbolicLink()) throw new Error(`Symlink record is not allowed: ${directory}`);
-      if (info.isDirectory()) { validateId(id); ids.push(id); }
+      // An entry withdrawn since the directory snapshot is simply absent.
+      const info = await statIfPresent(directory);
+      if (info?.isSymbolicLink()) throw new Error(`Symlink record is not allowed: ${directory}`);
+      if (info?.isDirectory()) { validateId(id); ids.push(id); }
     }
     return ids.sort(lexical);
   }
@@ -181,26 +190,40 @@ function core(configuration) {
       const saved = validateDocument(JSON.parse(serialized), copy.id, { rev, uid });
       // Validation/serialization finish before any record or revision is created.
       await configured(selected);
-      if (!state.exists) {
-        try { await fs.mkdir(state.directory); }
-        catch (error) { if (error.code !== 'EEXIST') throw error; }
-      }
-      requireDirectory(await fs.lstat(state.directory), state.directory);
       const file = path.join(state.directory, `${rev}-${uid}.json`);
       // Stage outside record directories: readers only inspect published names.
       // Opening exclusively establishes ownership before cleanup is permitted.
       const staging = path.join(selected, `.und-stage-${randomUUID()}`);
       const handle = await fs.open(staging, 'wx');
+      let created = false, published = false;
       try {
         try { await handle.writeFile(serialized); }
         finally { await handle.close(); }
-        // A local hard link publishes complete bytes atomically and fails with
-        // EEXIST rather than replacing a competing final revision filename.
-        await fs.link(staging, file);
+        // The record directory is made only once complete bytes are staged, so
+        // an earlier failure leaves no trace of a record that was never written.
+        for (let attempt = 1; !published; attempt++) {
+          try {
+            try { await fs.mkdir(state.directory); created = true; }
+            catch (error) { if (error.code !== 'EEXIST') throw error; }
+            requireDirectory(await fs.lstat(state.directory), state.directory);
+            // A local hard link publishes complete bytes atomically and fails with
+            // EEXIST rather than replacing a competing final revision filename.
+            await fs.link(staging, file);
+            published = true;
+          } catch (error) {
+            // Another writer's failed first put may withdraw the still-empty
+            // directory between our check and our link; make it again.
+            if (error.code !== 'ENOENT' || attempt === 3) throw error;
+          }
+        }
       } finally {
         // Failure here cannot undo known publication or replace its outcome.
         // An orphan is an ordinary root file, ignored by all/get/rev/clean.
         try { await fs.unlink(staging); } catch {}
+        // Withdraw a record directory this put made but could not publish into,
+        // so has()/all() do not report a record with no revision. rmdir removes
+        // only an empty directory: a concurrent writer's revision keeps it.
+        if (created && !published) { try { await fs.rmdir(state.directory); } catch {} }
       }
       return saved;
     },

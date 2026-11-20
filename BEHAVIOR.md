@@ -48,6 +48,10 @@ documentation must explicitly distinguish these sketches from the published API.
   explicitly identifies the base revision, including stale bases; the new revision
   is base+1. Omitted, null or zero rev uses the observed latest revision (or zero).
   Negative, fractional, nonnumeric, nonfinite and overflowing revisions reject.
+- A put that fails leaves no record behind: a record directory it created is
+  withdrawn if no revision was published, so has() stays false and all() omits
+  the ID. A directory that already existed, or that holds another writer's
+  revision, is never removed.
 - Every successful write retains prior revision files. Concurrent writes from the
   same base may create several files at the same next revision. All must remain;
   the program does not pretend that choosing one winner merges conflicting data.
@@ -65,7 +69,11 @@ All tests use newly created temporary directories and remove only those fixtures
 ## Command line
 
 The CLI supports help, package-derived version, and clean [db] [-d|--depth N].
-An omitted db means the current directory; depth defaults to 1. Help/version have
+An omitted db means the current directory; depth defaults to 1. --depth=N is
+equivalent to --depth N, and -- ends option parsing so a path may begin with a
+dash. clean requires an existing database directory: a missing path fails with a
+nonzero exit code and creates nothing (the library's path() still creates missing
+directories for writers). Help/version have
 exit code 0. Unknown commands/options, repeated options, extra operands, missing
 option values and invalid depths fail with a nonzero exit code, actionable stderr
 and no success output or storage mutation. No-argument invocation prints help.
